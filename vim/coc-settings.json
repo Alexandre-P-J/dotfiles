@@ -1,0 +1,21 @@
+{
+    "diagnostic.errorSign": "E",
+    "diagnostic.warningSign": "W",
+    "diagnostic.infoSign": "?",
+    "git.changedSign.text": "*",
+    "git.changedSign.hlGroup": "bg",
+    "git.addedSign.text": "+",
+    "git.addedSign.hlGroup": "bg",
+    "git.removedSign.text": "~",
+    "git.removedSign.hlGroup": "bg",
+    "git.topRemovedSign.text": "~^",
+    "git.topRemovedSign.hlGroup": "bg",
+    "git.changeRemovedSign.text": "*",
+    "git.changeRemovedSign.hlGroup": "bg",
+    "clangd.arguments": [
+        "-compile-commands-dir=build"
+    ],
+    "clangd.semanticHighlighting": true,
+    "prettier.printWidth": 100,
+    "prettier.tabWidth": 4,
+}

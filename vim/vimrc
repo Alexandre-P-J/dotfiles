@@ -1,0 +1,238 @@
+" === Extra Keybinds ===
+" 
+" == Basic ==
+" CTRL+c/v/x: copy, paste, cut
+" CTRL+h/j/k/l: move between splits
+" 
+" == IDE ==
+" Shift+D: Code documentation for the symbol
+" Shift+R: Refactor, rename symbol
+" c: comment code
+" gr: goto references, show symbol references
+" gd: goto definition, show symbol definition
+" gs: goto header/source, switch between header and source
+" gk: goto next code error/warning
+" gj: goto previous code error/warning
+" :Format: Formats the file (prettier/fallback)
+" :Fold: Fold code
+" :Organize: Organize the source's includes
+" 
+" == Management==
+" :NERDTree: open file explorer
+" Shift+C inside NERDTree: Set the selected folder as root
+" :PlugInstall: to install addons
+" :PlugClean: to uninstall deleted addons
+"
+" == INFO ==
+" Saving a latex file automatically generates a pdf, exiting the
+" buffer cleans all the build files.
+" 
+" The rest of configs are intuitive
+
+
+
+" Install Vim-Plug if needed
+if empty(glob('~/.vim/autoload/plug.vim'))
+  silent !curl -fLo ~/.vim/autoload/plug.vim --create-dirs
+    \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+  autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
+endif
+
+" Plugin list
+call plug#begin()
+" => Coloring
+Plug 'flazz/vim-colorschemes'
+Plug 'luochen1990/rainbow'
+let g:rainbow_active = 1
+" => Git commands
+Plug 'tpope/vim-fugitive'
+" => Latex integration
+Plug 'lervag/vimtex'
+" => Commenting
+Plug 'preservim/nerdcommenter'
+" => Intellisense and syntax highlighting
+Plug 'neoclide/coc.nvim', {'branch': 'release'}
+Plug 'sheerun/vim-polyglot'
+Plug 'jackguo380/vim-lsp-cxx-highlight'
+" => File browser
+Plug 'scrooloose/nerdtree'
+Plug 'Xuyuanp/nerdtree-git-plugin'
+" => Bar
+Plug 'vim-airline/vim-airline'
+Plug 'vim-airline/vim-airline-themes'
+call plug#end()
+
+
+" Core Config
+set encoding=UTF-8
+set updatetime=300
+set nobackup
+set nowritebackup
+set shortmess+=c
+:set guicursor+=a:blinkon0
+
+" Core Aesthetics
+colorscheme adventurous
+set signcolumn=yes
+highlight Pmenu guibg=gray5 guifg=White
+highlight SignColumn guibg=bg
+set guioptions-=m  "remove menu bar
+set guioptions-=T  "remove toolbar
+set guioptions-=r  "remove right-hand scroll bar
+set guioptions-=L  "remove left-hand scroll bar
+set lines=100 columns=100
+set incsearch
+
+" Intuitive clipboard
+noremap <C-c> "+y
+noremap <C-x> "+x
+noremap <C-v> "+p
+
+" Good habits: Disable bad keybinds
+noremap <Up> <NOP>
+noremap <Down> <NOP>
+noremap <Left> <NOP>
+noremap <Right> <NOP>
+
+" Pairing braces: Auto move left
+inoremap <> <><Left>
+inoremap () ()<Left>
+inoremap {} {}<Left>
+inoremap [] []<Left>
+inoremap "" ""<Left>
+inoremap '' ''<Left>
+inoremap `` ``<Left>
+
+" Splits
+nnoremap <C-J> <C-W><C-J>
+nnoremap <C-K> <C-W><C-K>
+nnoremap <C-L> <C-W><C-L>
+nnoremap <C-H> <C-W><C-H>
+set splitbelow
+set splitright
+
+" Indentation
+set shiftwidth=4
+set softtabstop=4
+set expandtab
+
+" Line Numerarion
+set number relativenumber
+
+" NERDTree
+autocmd StdinReadPre * let s:std_in=1
+autocmd VimEnter * if argc() == 0 && !exists("s:std_in") | NERDTree | endif
+let NERDTreeMapActivateNode='<space>'
+let NERDTreeChDirMode = 2
+let NERDTreeShowHidden = 1
+let NERDTreeIgnore=['\.git$']
+nnoremap <C-N> :NERDTreeFocus<CR>
+
+" NERDTree Git
+let g:NERDTreeShowIgnoredStatus = 1
+let g:NERDTreeIndicatorMapCustom = {
+    \ "Modified"  : "M",
+    \ "Staged"    : "S",
+    \ "Untracked" : "U",
+    \ "Renamed"   : "R",
+    \ "Unmerged"  : "C",
+    \ "Deleted"   : "D",
+    \ "Dirty"     : "U",
+    \ "Clean"     : "✔︎",
+    \ 'Ignored'   : 'I',
+    \ "Unknown"   : "?"
+    \ }
+
+" Coc
+" => Extensions
+let g:coc_global_extensions = [
+    \ 'coc-git',
+    \ 'coc-json',
+    \ 'coc-texlab',
+    \ 'coc-sh',
+    \ 'coc-python',
+    \ 'coc-markdownlint',
+    \ 'coc-flutter',
+    \ 'coc-cmake',
+    \ 'coc-clangd',
+    \ 'coc-prettier'
+    \ ]
+" => Restart on pwd change if using c/c++ in any buffer
+autocmd DirChanged * if len(filter(range(1, bufnr('$')), { _,bn -> index(['c', 'cpp'], getbufvar(bn, '&ft')) >= 0})) | exe 'sil! CocRestart' | endif
+" => Use tabs in autocomplete
+inoremap <silent><expr> <TAB>
+      \ pumvisible() ? "\<C-n>" :
+      \ <SID>check_back_space() ? "\<TAB>" :
+      \ coc#refresh()
+inoremap <expr><S-TAB> pumvisible() ? "\<C-p>" : "\<C-h>"
+function! s:check_back_space() abort
+  let col = col('.') - 1
+  return !col || getline('.')[col - 1]  =~# '\s'
+endfunction
+" => GoTo
+nmap <silent> gk <Plug>(coc-diagnostic-prev)
+nmap <silent> gj <Plug>(coc-diagnostic-next)
+nmap <silent> gd <Plug>(coc-definition)
+nmap <silent> gr <Plug>(coc-references)
+nmap <silent> gs :CocCommand clangd.switchSourceHeader<CR>
+" => Highlight the symbol and its references when holding the cursor.
+autocmd CursorHold * silent call CocActionAsync('highlight')
+" => Symbol renaming.
+nmap R <Plug>(coc-rename)
+" => Use D to show documentation in preview window.
+nnoremap <silent> D :call <SID>show_documentation()<CR>
+function! s:show_documentation()
+  if (index(['vim','help'], &filetype) >= 0)
+    execute 'h '.expand('<cword>')
+  else
+    call CocAction('doHover')
+  endif
+endfunction
+" => Add `:Format` command to format current buffer.
+command! -nargs=0 Format :call CocAction('format')
+" => Add `:Fold` command to fold current buffer.
+command! -nargs=? Fold :call CocAction('fold', <f-args>)
+" => Add `:Organize` command for organize imports of the current buffer.
+command! -nargs=0 Organize :call CocAction('runCommand', 'editor.action.organizeImport')
+
+" VimTex autocompile, autoclean and comodity
+augroup vimtex_config
+  autocmd!
+  autocmd Filetype tex autocmd BufUnload <buffer> VimtexClean
+  autocmd Filetype tex autocmd BufUnload <buffer> VimtexErrors
+  autocmd Filetype tex autocmd BufWritePost <buffer> VimtexCompileSS
+augroup END
+
+" Polyglot 
+let g:polyglot_disabled = ['c/c++', 'c++11']
+
+" Rainbow Parentheses
+let g:rainbow_conf = {'guifgs': ['DodgerBlue', 'Red', 'Green']}
+
+" Airline
+let g:airline_symbols_ascii = 1
+if !exists('g:airline_symbols')
+    let g:airline_symbols = {}
+endif
+let g:airline_left_sep = ''
+let g:airline_right_sep = ''
+let g:airline_left_alt_sep = ''
+let g:airline_right_alt_sep = ''
+let g:airline_symbols.readonly = 'Read Only'
+let g:airline_symbols.dirty='Dirty'
+let g:airline_symbols.crypt = ''
+let g:airline_symbols.linenr = ''
+let g:airline_symbols.maxlinenr = ''
+let g:airline_symbols.branch = ''
+let g:airline_symbols.paste = ''
+let g:airline_symbols.spell = ''
+let g:airline_symbols.notexists = ''
+let g:airline_symbols.whitespace = ''
+let g:airline_skip_empty_sections = 1
+let g:airline#extensions#whitespace#enabled = 0
+let g:airline#extensions#ycm#enabled = 1
+let g:airline_theme = 'monochrome'
+
+" NERDCommenter
+nnoremap c :call NERDComment(0,"toggle")<CR>
+vnoremap c :call NERDComment(0,"toggle")<CR>
