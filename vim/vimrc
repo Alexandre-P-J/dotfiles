@@ -14,8 +14,7 @@
 " gs: goto header/source, switch between header and source
 " gk: goto next code error/warning
 " gj: goto previous code error/warning
-" :Format: Formats the file (prettier/fallback)
-" :Fold: Fold code
+" :Format: Formats the file (prettier/clang/Coc)
 " :Organize: Organize the source's includes
 " 
 " == Management==
@@ -55,6 +54,8 @@ Plug 'preservim/nerdcommenter'
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
 Plug 'sheerun/vim-polyglot'
 Plug 'jackguo380/vim-lsp-cxx-highlight'
+" => Formating
+Plug 'rhysd/vim-clang-format'
 " => File browser
 Plug 'scrooloose/nerdtree'
 Plug 'Xuyuanp/nerdtree-git-plugin'
@@ -189,10 +190,6 @@ function! s:show_documentation()
     call CocAction('doHover')
   endif
 endfunction
-" => Add `:Format` command to format current buffer.
-command! -nargs=0 Format :call CocAction('format')
-" => Add `:Fold` command to fold current buffer.
-command! -nargs=? Fold :call CocAction('fold', <f-args>)
 " => Add `:Organize` command for organize imports of the current buffer.
 command! -nargs=0 Organize :call CocAction('runCommand', 'editor.action.organizeImport')
 
@@ -204,11 +201,39 @@ augroup vimtex_config
   autocmd Filetype tex autocmd BufWritePost <buffer> VimtexCompileSS
 augroup END
 
+" Clang-Format
+let g:clang_format#style_options = {
+            \ "UseTab": "Never",
+            \ "IndentWidth": 4,
+            \ "IncludeBlocks": "Preserve",
+            \ "IndentPPDirectives": "BeforeHash",
+            \ "BreakBeforeBraces": "Custom",
+            \ "BraceWrapping" : {
+            \   "BeforeElse" : "true",
+            \ }, 
+            \ "AccessModifierOffset": -4
+            \ }
+
 " Polyglot 
 let g:polyglot_disabled = ['c/c++', 'c++11']
 
 " Rainbow Parentheses
 let g:rainbow_conf = {'guifgs': ['DodgerBlue', 'Red', 'Green']}
+
+" NERDCommenter
+nnoremap c :call NERDComment(0,"toggle")<CR>
+vnoremap c :call NERDComment(0,"toggle")<CR>
+
+" File Formating (Coc/Clang-Format)
+function! Format()
+    let l:use_clang = ['cpp', 'c', 'objc']
+    if index(use_clang, &ft) >= 0
+        ClangFormat
+    else
+        CocAction('format')
+    endif
+endfunction
+command! -nargs=0 Format :call Format()
 
 " Airline
 let g:airline_symbols_ascii = 1
@@ -234,6 +259,3 @@ let g:airline#extensions#whitespace#enabled = 0
 let g:airline#extensions#ycm#enabled = 1
 let g:airline_theme = 'monochrome'
 
-" NERDCommenter
-nnoremap c :call NERDComment(0,"toggle")<CR>
-vnoremap c :call NERDComment(0,"toggle")<CR>
