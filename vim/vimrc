@@ -41,7 +41,6 @@ endif
 " Plugin list
 call plug#begin()
 " => Coloring
-Plug 'flazz/vim-colorschemes'
 Plug 'luochen1990/rainbow'
 let g:rainbow_active = 1
 " => Git commands
@@ -52,8 +51,9 @@ Plug 'lervag/vimtex'
 Plug 'preservim/nerdcommenter'
 " => Intellisense and syntax highlighting
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
-Plug 'sheerun/vim-polyglot'
-Plug 'jackguo380/vim-lsp-cxx-highlight'
+Plug 'jackguo380/vim-lsp-cxx-highlight' " C-like semantic
+Plug 'bfrg/vim-cpp-modern' " C-like syntactic (fallback)
+Plug 'sheerun/vim-polyglot' " global fallback
 " => Formating
 Plug 'rhysd/vim-clang-format'
 " => File browser
@@ -64,20 +64,15 @@ Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
 call plug#end()
 
-
 " Core Config
 set encoding=UTF-8
 set updatetime=300
 set nobackup
 set nowritebackup
 set shortmess+=c
-:set guicursor+=a:blinkon0
-
-" Core Aesthetics
-colorscheme adventurous
+set guicursor+=a:blinkon0
+colorscheme custom_lemon
 set signcolumn=yes
-highlight Pmenu guibg=gray5 guifg=White
-highlight SignColumn guibg=bg
 set guioptions-=m  "remove menu bar
 set guioptions-=T  "remove toolbar
 set guioptions-=r  "remove right-hand scroll bar
@@ -214,7 +209,12 @@ let g:clang_format#style_options = {
             \ "AccessModifierOffset": -4
             \ }
 
-" Polyglot 
+" Cpp modern Basic regex, lsp-cxx-highlight fallback
+let g:cpp_no_function_highlight = 1
+let g:cpp_simple_highlight = 1
+let g:cpp_named_requirements_highlight = 1
+
+" Polyglot global fallback
 let g:polyglot_disabled = ['c/c++', 'c++11']
 
 " Rainbow Parentheses
